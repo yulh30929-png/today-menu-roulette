@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>냠냠 셰프의 오늘 뭐 먹지?</title>
+  <!-- 귀여운 한글 폰트 로드 (주아체 & 프리텐다드) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-cream: #fff9ef;
+      --bg-peach: #ffe8d6;
+      --bg-mint: #e3f8f0;
+      --card-bg: #ffffff;
+      --ink: #4a3525;
+      --ink-soft: #7d634e;
+      --accent-pink: #ff7aa2;
+      --accent-yellow: #ffd166;
+      --accent-mint: #4ecdc4;
+      --accent-lavender: #b8a9ff;
+      --border: #4a3525;
+      --shadow: 0 5px 0 #4a3525;
+      --shadow-sm: 0 3px 0 #4a3525;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      color: var(--ink);
+      background-color: var(--bg-cream);
+      background-image:
+        radial-gradient(#ffd6a5 2.2px, transparent 2.2px),
+        radial-gradient(#bde0fe 2.2px, transparent 2.2px);
+      background-size: 28px 28px;
+      background-position: 0 0, 14px 14px;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding: 14px 12px 44px;
+    }
+
+    .font-display {
+      font-family: "Jua", "Noto Sans KR", sans-serif;
+      letter-spacing: 0.01em;
+    }
+
+    /* 배경에 떠다니는 귀여운 캐릭터 데코 */
+    .floating-bg {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .float-item {
+      position: absolute;
+      opacity: 0.8;
+      animation: floatBob 4.5s ease-in-out infinite;
+    }
+
+    .float-item:nth-child(1) { top: 5%; left: 4%; animation-delay: 0s; }
+    .float-item:nth-child(2) { top: 15%; right: 5%; animation-delay: 1.1s; }
+    .float-item:nth-child(3) { bottom: 16%; left: 3%; animation-delay: 1.9s; }
+    .float-item:nth-child(4) { bottom: 8%; right: 4%; animation-delay: 2.6s; }
+
+    @keyframes floatBob {
+      0%, 100% { transform: translateY(0px) rotate(-5deg); }
+      50% { transform: translateY(-11px) rotate(5deg); }
+    }
+
+    @keyframes bouncePop {
+      0%, 100% { transform: scale(1); }
+      40% { transform: scale(1.07, 0.94); }
+      70% { transform: scale(0.97, 1.03); }
+    }
+
+    @keyframes pinTick {
+      0% { transform: translateX(-50%) rotate(0deg); }
+      35% { transform: translateX(-50%) rotate(-24deg); }
+      100% { transform: translateX(-50%) rotate(0deg); }
+    }
+
+    .pin-tick {
+      animation: pinTick 0.13s ease-out;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+
+    /* 상단 곰돌이 셰프 헤더 & 실시간 말풍선 */
+    .hero-card {
+      background: linear-gradient(135deg, #fff1e6 0%, #e8f8f5 100%);
+      border: 3px solid var(--border);
+      border-radius: 26px;
+      box-shadow: var(--shadow);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .chef-box {
+      flex-shrink: 0;
+      width: 78px;
+      height: 78px;
+      background: #fff;
+      border: 2.5px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: bouncePop 3.2s ease-in-out infinite;
+    }
+
+    .hero-text {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: "Jua", sans-serif;
+      font-size: clamp(1.35rem, 4.2vw, 1.85rem);
+      font-weight: 400;
+      color: #ff6b8b;
+      text-shadow: 1.5px 1.5px 0 var(--border);
+      letter-spacing: 0.01em;
+    }
+
+    .sound-btn {
+      background: var(--accent-yellow);
+      border: 2.5px solid var(--border);
+      border-radius: 999px;
+      box-shadow: var(--shadow-sm);
+      padding: 5px 12px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .sound-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 var(--border);
+    }
+
+    .speech-bubble {
+      margin-top: 7px;
+      background: #ffffff;
+      border: 2px solid var(--border);
+      border-radius: 15px;
+      padding: 7px 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.4;
+    }
+
+    /* PC 2열 / 모바일 1열 반응형 메인 그리드 */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.12fr 0.88fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    .left-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .right-col {
+      position: sticky;
+      top: 14px;
+    }
+
+    /* 스티커 카드 공통 */
+    .card {
+      background: var(--card-bg);
+      border: 3px solid var(--border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .section-title {
+      margin: 0 0 11px;
+      font-family: "Jua", sans-serif;
+      font-size: 1.15rem;
+      font-weight: 400;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 필터 그룹 */
+    .filter-group {
+      margin-bottom: 11px;
+    }
+
+    .filter-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .filter-label {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--ink-soft);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .chip {
+      background: #fff9f2;
+      border: 2px solid var(--border);
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 0.83rem;
+      font-weight: 700;
+      color: var(--ink);
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+
+    .chip:hover {
+      background: #ffe8d6;
+    }
+
+    .chip.active {
+      background: var(--accent-pink);
+      color: #ffffff;
+      box-shadow: 0 2px 0 var(--border);
+      transform: translateY(-1px);
+    }
+
+    /* 룰렛 카드 */
+    .roulette-card {
+      text-align: center;
+      background: linear-gradient(180deg, #ffffff 0%, #fff6ec 100%);
+    }
+
+    .wheel-wrap {
+      position: relative;
+      width: min(310px, 74vw);
+      height: min(310px, 74vw);
+      margin: 10px auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pointer {
+      position: absolute;
+      top: -13px;
+      left: 50%;
+      transform: translateX(-50%);
+      transform-origin: 50% 10px;
+      z-index: 4;
+      filter: drop-shadow(0 3px 0 var(--border));
+    }
+
+    canvas#wheelCanvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 4px solid var(--border);
+      box-shadow: 0 6px 0 var(--border);
+      background: #fff;
+      display: block;
+    }
+
+    /* 중앙 주먹밥 캐릭터 버튼 */
+    .center-mascot {
+      position: absolute;
+      z-index: 3;
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 3px solid var(--border);
+      box-shadow: 0 3px 0 var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 0;
+      transition: transform 0.12s ease;
+    }
+
+    .center-mascot:hover:not(:disabled) {
+      transform: scale(1.06);
+    }
+
+    .center-mascot:active:not(:disabled) {
+      transform: scale(0.94);
+    }
+
+    .spin-btn {
+      width: 100%;
+      max-width: 310px;
+      background: linear-gradient(180deg, #ff8fab 0%, #ff6b95 100%);
+      color: #ffffff;
+      border: 3px solid var(--border);
+      border-radius: 999px;
+      box-shadow: var(--shadow);
+      padding: 13px 24px;
+      font-family: "Jua", sans-serif;
+      font-size: 1.25rem;
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+
+    .spin-btn:hover:not(:disabled) {
+      filter: brightness(1.03);
+    }
+
+    .spin-btn:active:not(:disabled) {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 var(--border);
+    }
+
+    .spin-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* 후보 추가 폼 및 태그 클라우드 */
+    .add-form {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .add-input {
+      flex: 1;
+      min-width: 0;
+      border: 2.5px solid var(--border);
+      border-radius: 14px;
+      padding: 9px 12px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--ink);
+      background: #fffdf9;
+    }
+
+    .add-input:focus {
+      outline: none;
+      background: #ffffff;
+      box-shadow: 0 0 0 3px #ffd16688;
+    }
+
+    .add-btn {
+      background: var(--accent-mint);
+      border: 2.5px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+      padding: 0 15px;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--ink);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .add-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 var(--border);
+    }
+
+    .candidate-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.82rem;
+      color: var(--ink-soft);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .reset-link {
+      background: none;
+      border: none;
+      color: #e05780;
+      font-weight: 800;
+      font-size: 0.82rem;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+    }
+
+    .tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      max-height: 185px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    .menu-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #fff7e6;
+      border: 2px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 9px 4px 11px;
+      font-size: 0.83rem;
+      font-weight: 700;
+    }
+
+    .menu-tag.custom-tag {
+      background: #e3f8f0;
+    }
+
+    .del-btn {
+      background: #ffe3ec;
+      border: 1.5px solid var(--border);
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 0.7rem;
+      line-height: 1;
+      font-weight: 800;
+      color: var(--ink);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+    }
+
+    .del-btn:hover {
+      background: #ff8fab;
+      color: #fff;
+    }
+
+    /* 당첨 결과 모달 */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(74, 53, 37, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 20;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-card {
+      position: relative;
+      width: 100%;
+      max-width: 410px;
+      background: #fffdf9;
+      border: 3.5px solid var(--border);
+      border-radius: 28px;
+      box-shadow: 0 8px 0 var(--border);
+      padding: 20px 18px 18px;
+      text-align: center;
+      animation: bouncePop 0.35s ease;
+    }
+
+    .friends-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .result-emoji {
+      font-size: 3.3rem;
+      line-height: 1.1;
+      margin: 4px 0;
+    }
+
+    .result-name {
+      margin: 0;
+      font-family: "Jua", sans-serif;
+      font-size: 2rem;
+      font-weight: 400;
+      color: #ff6b8b;
+      text-shadow: 1.5px 1.5px 0 var(--border);
+    }
+
+    .result-comment {
+      margin: 10px 0 14px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--ink);
+      background: #fff1e6;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 10px 12px;
+      line-height: 1.45;
+    }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 9px;
+    }
+
+    .action-btn {
+      border: 2.5px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+      padding: 10px 8px;
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: var(--ink);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .action-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 var(--border);
+    }
+
+    .btn-naver { background: #c7f9cc; }
+    .btn-kakao { background: #fff3b0; }
+    .btn-copy { background: #e0fbfc; grid-column: span 2; }
+
+    .close-btn {
+      width: 100%;
+      background: var(--accent-lavender);
+      border: 2.5px solid var(--border);
+      border-radius: 14px;
+      box-shadow: var(--shadow-sm);
+      padding: 10px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .close-btn:active {
+      transform: translateY(2px);
+      box-shadow: 0 1px 0 var(--border);
+    }
+
+    /* 토스트 메시지 */
+    .toast {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: #fff;
+      border: 2px solid #fff;
+      padding: 9px 18px;
+      border-radius: 999px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.22s ease;
+      z-index: 30;
+      white-space: nowrap;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* 파스텔 컨페티 폭죽 */
+    .confetti {
+      position: fixed;
+      top: -14px;
+      width: 11px;
+      height: 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 3px;
+      z-index: 25;
+      pointer-events: none;
+      animation: fall 1.9s linear forwards;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(105vh) rotate(560deg);
+        opacity: 0;
+      }
+    }
+
+    /* 태블릿 및 모바일 반응형 최적화 */
+    @media (max-width: 780px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+      .right-col {
+        position: static;
+        order: -1; /* 모바일에서는 룰렛을 위쪽에 배치해 한눈에 보이도록 구성 */
+      }
+      .wheel-wrap {
+        width: min(275px, 72vw);
+        height: min(275px, 72vw);
+      }
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 10px 10px 36px;
+      }
+      .hero-card {
+        padding: 12px 13px;
+        gap: 10px;
+      }
+      .chef-box {
+        width: 66px;
+        height: 66px;
+      }
+      .card {
+        padding: 13px;
+        border-radius: 20px;
+      }
+      .tag-cloud {
+        max-height: 145px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 배경에 떠다니는 귀여운 캐릭터 데코 (계란후라이, 딸기, 고양이 발바닥, 별) -->
+  <div class="floating-bg" aria-hidden="true">
+    <!-- 계란후라이 -->
+    <svg class="float-item" width="54" height="54" viewBox="0 0 60 60">
+      <path d="M30 7 C44 6 54 15 53 29 C52 43 43 54 29 53 C15 52 6 42 8 28 C10 14 17 8 30 7 Z" fill="#fff" stroke="#4a3525" stroke-width="2.5"/>
+      <circle cx="30" cy="30" r="11" fill="#ffd166" stroke="#4a3525" stroke-width="2.5"/>
+      <circle cx="27" cy="29" r="1.8" fill="#4a3525"/>
+      <circle cx="33" cy="29" r="1.8" fill="#4a3525"/>
+      <path d="M28.5 33 Q30 35 31.5 33" fill="none" stroke="#4a3525" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+
+    <!-- 딸기 -->
+    <svg class="float-item" width="52" height="52" viewBox="0 0 60 60">
+      <path d="M30 11 C17 11 12 24 18 37 C22 46 28 52 30 52 C32 52 38 46 42 37 C48 24 43 11 30 11 Z" fill="#ff8fab" stroke="#4a3525" stroke-width="2.5"/>
+      <path d="M20 13 Q30 7 40 13 L34 18 L30 14 L26 18 Z" fill="#74c69d" stroke="#4a3525" stroke-width="2"/>
+      <circle cx="25" cy="28" r="2" fill="#4a3525"/>
+      <path d="M33 27 Q35 25 37 27" fill="none" stroke="#4a3525" stroke-width="2" stroke-linecap="round"/>
+      <path d="M28 32 Q30 34.5 32 32" fill="none" stroke="#4a3525" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+
+    <!-- 고양이 발바닥 -->
+    <svg class="float-item" width="50" height="50" viewBox="0 0 60 60">
+      <ellipse cx="30" cy="36" rx="13" ry="11" fill="#ffd6e0" stroke="#4a3525" stroke-width="2.5"/>
+      <circle cx="16" cy="23" r="5.5" fill="#ffd6e0" stroke="#4a3525" stroke-width="2.3"/>
+      <circle cx="25" cy="18" r="5.5" fill="#ffd6e0" stroke="#4a3525" stroke-width="2.3"/>
+      <circle cx="35" cy="18" r="5.5" fill="#ffd6e0" stroke="#4a3525" stroke-width="2.3"/>
+      <circle cx="44" cy="23" r="5.5" fill="#ffd6e0" stroke="#4a3525" stroke-width="2.3"/>
+    </svg>
+
+    <!-- 반짝이 별 -->
+    <svg class="float-item" width="52" height="52" viewBox="0 0 60 60">
+      <polygon points="30,8 36,22 51,23 39,33 43,48 30,40 17,48 21,33 9,23 24,22" fill="#ffe066" stroke="#4a3525" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="26" cy="28" r="1.8" fill="#4a3525"/>
+      <circle cx="34" cy="28" r="1.8" fill="#4a3525"/>
+      <path d="M28.5 32 Q30 34 31.5 32" fill="none" stroke="#4a3525" stroke-width="1.8" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="container">
+    <!-- 상단 아기 곰돌이 셰프 헤더 -->
+    <header class="hero-card">
+      <div class="chef-box" aria-hidden="true">
+        <svg width="64" height="64" viewBox="0 0 80 80">
+          <!-- 요리모자 -->
+          <path d="M24 26 C18 26 16 18 22 15 C24 9 34 8 40 12 C46 8 56 9 58 15 C64 18 62 26 56 26 Z" fill="#ffffff" stroke="#4a3525" stroke-width="2.6" stroke-linejoin="round"/>
+          <rect x="25" y="25" width="30" height="7" rx="3" fill="#fff3b0" stroke="#4a3525" stroke-width="2.4"/>
+          <!-- 곰돌이 귀 -->
+          <circle cx="22" cy="39" r="7" fill="#d4a373" stroke="#4a3525" stroke-width="2.4"/>
+          <circle cx="58" cy="39" r="7" fill="#d4a373" stroke="#4a3525" stroke-width="2.4"/>
+          <!-- 얼굴 -->
+          <ellipse cx="40" cy="49" rx="21" ry="18" fill="#e6be8a" stroke="#4a3525" stroke-width="2.6"/>
+          <!-- 눈 & 볼터치 -->
+          <circle cx="32" cy="47" r="2.6" fill="#4a3525"/>
+          <circle cx="48" cy="47" r="2.6" fill="#4a3525"/>
+          <ellipse cx="26" cy="52" rx="3.5" ry="2.2" fill="#ff8fab" opacity="0.75"/>
+          <ellipse cx="54" cy="52" rx="3.5" ry="2.2" fill="#ff8fab" opacity="0.75"/>
+          <!-- 주둥이 & 입 -->
+          <ellipse cx="40" cy="53" rx="7" ry="5" fill="#fff8f0" stroke="#4a3525" stroke-width="2"/>
+          <circle cx="40" cy="51.5" r="2" fill="#4a3525"/>
+          <path d="M37.5 54.5 Q40 57 42.5 54.5" fill="none" stroke="#4a3525" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="hero-text">
+        <div class="title-row">
+          <h1>냠냠 셰프의 오늘 뭐 먹지?</h1>
+          <button type="button" id="soundToggle" class="sound-btn">🔊 소리 ON</button>
+        </div>
+        <div id="chefSpeech" class="speech-bubble">
+          안녕! 오늘 어떤 메뉴를 골라볼까? 조건을 눌러도 좋고 바로 돌려도 돼곰! 🐻
+        </div>
+      </div>
+    </header>
+
+    <div class="main-grid">
+      <!-- 왼쪽: 상황별 필터링 & 실시간 후보 편집 -->
+      <div class="left-col">
+        <!-- 1. 상황별 스마트 필터링 -->
+        <section class="card">
+          <h2 class="section-title">🎀 상황별 스마트 필터</h2>
+
+          <div class="filter-group">
+            <span class="filter-label">인원 · 상황</span>
+            <div class="chip-list" id="situationChips">
+              <button type="button" class="chip active" data-value="all">전체</button>
+              <button type="button" class="chip" data-value="solo">🍱 혼밥</button>
+              <button type="button" class="chip" data-value="date">💕 데이트</button>
+              <button type="button" class="chip" data-value="group">🥳 여럿이/회식</button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <span class="filter-label">예산대</span>
+            <div class="chip-list" id="budgetChips">
+              <button type="button" class="chip active" data-value="all">전체</button>
+              <button type="button" class="chip" data-value="low">🪙 1만 원 이하</button>
+              <button type="button" class="chip" data-value="mid">💳 1~2만 원대</button>
+              <button type="button" class="chip" data-value="high">✨ 2만 원 이상</button>
+            </div>
+          </div>
+
+          <div class="filter-group">
+            <span class="filter-label">음식 종류</span>
+            <div class="chip-list" id="categoryChips">
+              <button type="button" class="chip active" data-value="all">전체</button>
+              <button type="button" class="chip" data-value="korean">🍚 한식</button>
+              <button type="button" class="chip" data-value="chinese">🥟 중식</button>
+              <button type="button" class="chip" data-value="japanese">🍣 일식</button>
+              <button type="button" class="chip" data-value="western">🍝 양식</button>
+              <button type="button" class="chip" data-value="snack">🍢 분식/기타</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- 2. 실시간 후보 편집 및 직접 추가 -->
+        <section class="card">
+          <h2 class="section-title">✏️ 실시간 후보 도시락 편집</h2>
+
+          <form id="addMenuForm" class="add-form">
+            <input
+              type="text"
+              id="menuInput"
+              class="add-input"
+              maxlength="16"
+              placeholder="먹고 싶은 메뉴 직접 추가 (예: 마라샹궈, 타코야끼)"
+            />
+            <button type="submit" class="add-btn">+ 추가</button>
+          </form>
+
+          <div class="candidate-meta">
+            <span id="candidateCount">현재 후보: 0개</span>
+            <button type="button" id="resetCandidatesBtn" class="reset-link">필터 후보 다시 불러오기</button>
+          </div>
+
+          <div id="tagCloud" class="tag-cloud"></div>
+        </section>
+      </div>
+
+      <!-- 오른쪽: 랜덤 룰렛 추첨 -->
+      <div class="right-col">
+        <section class="card roulette-card">
+          <h2 class="section-title" style="justify-content:center;">🎡 두근두근 운명의 룰렛</h2>
+
+          <div class="wheel-wrap">
+            <!-- 상단 포인터 -->
+            <svg id="wheelPointer" class="pointer" width="38" height="44" viewBox="0 0 38 44">
+              <polygon points="19,42 4,8 34,8" fill="#ff5d8f" stroke="#4a3525" stroke-width="3" stroke-linejoin="round"/>
+              <circle cx="19" cy="11" r="5" fill="#ffd166" stroke="#4a3525" stroke-width="2.5"/>
+            </svg>
+
+            <!-- 고해상도 캔버스 룰렛 -->
+            <canvas id="wheelCanvas" width="640" height="640"></canvas>
+
+            <!-- 중앙 주먹밥(오니기리) SVG 캐릭터 버튼 -->
+            <button type="button" id="centerMascotBtn" class="center-mascot" title="주먹밥 버튼을 눌러 룰렛 돌리기" aria-label="룰렛 돌리기">
+              <svg id="onigiriSvg" width="48" height="48" viewBox="0 0 60 60">
+                <path d="M30 8 L51 44 Q53 50 46 50 L14 50 Q7 50 9 44 Z" fill="#ffffff" stroke="#4a3525" stroke-width="2.8" stroke-linejoin="round"/>
+                <path d="M19 37 L41 37 L43 50 L17 50 Z" fill="#4a3525"/>
+                <ellipse cx="19" cy="31" rx="2.8" ry="1.8" fill="#ff8fab" opacity="0.8"/>
+                <ellipse cx="41" cy="31" rx="2.8" ry="1.8" fill="#ff8fab" opacity="0.8"/>
+                <g id="onigiriEyes">
+                  <circle cx="24" cy="27" r="2.5" fill="#4a3525"/>
+                  <circle cx="36" cy="27" r="2.5" fill="#4a3525"/>
+                  <path d="M28 30.5 Q30 32.5 32 30.5" fill="none" stroke="#4a3525" stroke-width="2" stroke-linecap="round"/>
+                </g>
+              </svg>
+            </button>
+          </div>
+
+          <button type="button" id="spinBtn" class="spin-btn">✨ 오늘의 메뉴 뽑기!</button>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- 당첨 결과 모달 -->
+  <div id="resultModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="modal-card">
+      <div class="friends-row" aria-hidden="true">
+        <!-- 축하 토끼 캐릭터 -->
+        <svg width="50" height="50" viewBox="0 0 60 60">
+          <ellipse cx="22" cy="14" rx="5" ry="12" transform="rotate(-12 22 14)" fill="#fff" stroke="#4a3525" stroke-width="2.4"/>
+          <ellipse cx="22" cy="14" rx="2.2" ry="7" transform="rotate(-12 22 14)" fill="#ffc2d1"/>
+          <ellipse cx="38" cy="14" rx="5" ry="12" transform="rotate(12 38 14)" fill="#fff" stroke="#4a3525" stroke-width="2.4"/>
+          <ellipse cx="38" cy="14" rx="2.2" ry="7" transform="rotate(12 38 14)" fill="#ffc2d1"/>
+          <circle cx="30" cy="36" r="15" fill="#fff" stroke="#4a3525" stroke-width="2.5"/>
+          <path d="M23 35 Q25 32 27 35" fill="none" stroke="#4a3525" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M33 35 Q35 32 37 35" fill="none" stroke="#4a3525" stroke-width="2.2" stroke-linecap="round"/>
+          <ellipse cx="20" cy="39" rx="2.5" ry="1.6" fill="#ff8fab" opacity="0.75"/>
+          <ellipse cx="40" cy="39" rx="2.5" ry="1.6" fill="#ff8fab" opacity="0.75"/>
+          <path d="M27.5 40 Q30 43 32.5 40" fill="none" stroke="#4a3525" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+
+        <!-- 축하 강아지 캐릭터 -->
+        <svg width="50" height="50" viewBox="0 0 60 60">
+          <ellipse cx="15" cy="34" rx="6" ry="11" transform="rotate(18 15 34)" fill="#f4a261" stroke="#4a3525" stroke-width="2.4"/>
+          <ellipse cx="45" cy="34" rx="6" ry="11" transform="rotate(-18 45 34)" fill="#f4a261" stroke="#4a3525" stroke-width="2.4"/>
+          <circle cx="30" cy="34" r="15" fill="#ffedd8" stroke="#4a3525" stroke-width="2.5"/>
+          <circle cx="25" cy="32" r="2.2" fill="#4a3525"/>
+          <circle cx="35" cy="32" r="2.2" fill="#4a3525"/>
+          <ellipse cx="20" cy="36" rx="2.5" ry="1.6" fill="#ff8fab" opacity="0.75"/>
+          <ellipse cx="40" cy="36" rx="2.5" ry="1.6" fill="#ff8fab" opacity="0.75"/>
+          <circle cx="30" cy="36.5" r="2.2" fill="#4a3525"/>
+          <path d="M27.5 39.5 Q30 42 32.5 39.5" fill="none" stroke="#4a3525" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <div id="resultEmoji" class="result-emoji">🍽️</div>
+      <h3 id="resultTitle" class="result-name">메뉴 이름</h3>
+      <p id="resultComment" class="result-comment">냠냠 셰프의 추천 한마디!</p>
+
+      <div class="action-grid">
+        <a id="naverMapLink" class="action-btn btn-naver" href="#" target="_blank" rel="noopener noreferrer">🗺️ 네이버 지도</a>
+        <a id="kakaoMapLink" class="action-btn btn-kakao" href="#" target="_blank" rel="noopener noreferrer">📍 카카오맵</a>
+        <button type="button" id="copyResultBtn" class="action-btn btn-copy">📋 당첨 결과 텍스트 복사하기</button>
+      </div>
+
+      <button type="button" id="closeModalBtn" class="close-btn">🔄 다시 고르기</button>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 -->
+  <div id="toast" class="toast">복사되었어요!</div>
+
+  <script>
+    // 24종의 한국 인기 메뉴 데이터베이스
+    const MENUS = [
+      { name: "김치찌개", emoji: "🍲", cat: "korean", budget: "low", sit: ["solo", "group"], comment: "얼큰한 국물 한 숟가락이면 피로가 싹 날아가곰! 🐻" },
+      { name: "제육볶음", emoji: "🥩", cat: "korean", budget: "low", sit: ["solo", "group"], comment: "불향 가득 달콤매콤 양념에 밥 한 공기 뚝딱!" },
+      { name: "비빔밥", emoji: "🥗", cat: "korean", budget: "low", sit: ["solo", "date"], comment: "알록달록 나물과 고추장의 균형 잡힌 한 그릇!" },
+      { name: "순두부찌개", emoji: "🥘", cat: "korean", budget: "low", sit: ["solo"], comment: "보글보글 몽글한 순두부가 속을 따뜻하게 해줘요." },
+      { name: "돼지국밥", emoji: "🥣", cat: "korean", budget: "low", sit: ["solo", "group"], comment: "진한 뽀얀 국물에 부추 듬뿍 넣어 든든하게 한 그릇!" },
+      { name: "삼겹살", emoji: "🥓", cat: "korean", budget: "high", sit: ["group", "date"], comment: "지글지글 구워 먹는 행복은 언제나 진리죠!" },
+      { name: "소갈비찜", emoji: "🍖", cat: "korean", budget: "high", sit: ["group", "date"], comment: "부드럽고 달콤짭짤한 특식 메뉴로 딱이에요." },
+      { name: "짜장면", emoji: "🍜", cat: "chinese", budget: "low", sit: ["solo", "group"], comment: "고민될 때 절대 실패 없는 국민 중식 메뉴!" },
+      { name: "짬뽕", emoji: "🌶️", cat: "chinese", budget: "low", sit: ["solo", "group"], comment: "불맛 가득한 칼칼한 국물로 스트레스 해소!" },
+      { name: "탕수육", emoji: "🍤", cat: "chinese", budget: "mid", sit: ["date", "group"], comment: "바삭달콤한 탕수육은 함께 나눌수록 맛있죠." },
+      { name: "마라탕", emoji: "🔥", cat: "chinese", budget: "mid", sit: ["solo", "date"], comment: "내 취향대로 토핑을 골라 담는 얼얼한 매력!" },
+      { name: "초밥", emoji: "🍣", cat: "japanese", budget: "mid", sit: ["solo", "date"], comment: "신선하고 깔끔하게 기분 전환하기 좋은 한 점!" },
+      { name: "돈카츠", emoji: "🍱", cat: "japanese", budget: "mid", sit: ["solo", "date"], comment: "겉바속촉 튀김옷과 육즙 가득한 고기의 조화!" },
+      { name: "라멘", emoji: "🍥", cat: "japanese", budget: "mid", sit: ["solo"], comment: "진한 육수와 탱글한 면발이 매력적인 한 그릇." },
+      { name: "규동", emoji: "🍚", cat: "japanese", budget: "low", sit: ["solo"], comment: "달콤짭짤 소고기와 양파가 어우러진 든든한 덮밥!" },
+      { name: "파스타", emoji: "🍝", cat: "western", budget: "mid", sit: ["date", "group"], comment: "크림·토마토·오일 중 끌리는 소스로 즐겨보세요!" },
+      { name: "피자", emoji: "🍕", cat: "western", budget: "mid", sit: ["date", "group"], comment: "치즈 쭉 늘어나는 피자로 파티 기분 내봐요!" },
+      { name: "수제버거", emoji: "🍔", cat: "western", budget: "mid", sit: ["solo", "date"], comment: "두툼한 패티와 바삭한 감자튀김 조합은 늘 설레죠." },
+      { name: "스테이크", emoji: "🍽️", cat: "western", budget: "high", sit: ["date", "group"], comment: "오늘 하루를 특별하게 만들어 줄 근사한 한 접시!" },
+      { name: "떡볶이", emoji: "🍢", cat: "snack", budget: "low", sit: ["solo", "date", "group"], comment: "쫄깃한 떡과 어묵, 튀김까지 곁들이면 최고!" },
+      { name: "김밥+라면", emoji: "🍙", cat: "snack", budget: "low", sit: ["solo"], comment: "언제 먹어도 정겹고 든든한 무적의 분식 클래식!" },
+      { name: "쌀국수", emoji: "🍲", cat: "snack", budget: "mid", sit: ["solo", "date"], comment: "따뜻하고 개운한 국물이 부담 없이 좋아요." },
+      { name: "치킨", emoji: "🍗", cat: "snack", budget: "high", sit: ["solo", "date", "group"], comment: "바삭한 닭다리 하나 뜯으면 세상 행복해진다냥~ 🐱" },
+      { name: "타코", emoji: "🌮", cat: "snack", budget: "mid", sit: ["date", "group"], comment: "상큼하고 이국적인 맛으로 기분 UP!" }
+    ];
+
+    const WHEEL_COLORS = [
+      "#ffccd5", "#fff3b0", "#c7f9cc", "#caf0f8",
+      "#e2afff", "#ffd6a5", "#fbc4ab", "#bde0fe"
+    ];
+
+    const state = {
+      situation: "all",
+      budget: "all",
+      category: "all",
+      candidates: [],
+      rotation: 0,
+      spinning: false,
+      soundOn: true,
+      lastWinner: null
+    };
+
+    const canvas = document.getElementById("wheelCanvas");
+    const ctx = canvas.getContext("2d");
+    const wheelPointer = document.getElementById("wheelPointer");
+    const spinBtn = document.getElementById("spinBtn");
+    const centerMascotBtn = document.getElementById("centerMascotBtn");
+    const onigiriEyes = document.getElementById("onigiriEyes");
+    const chefSpeech = document.getElementById("chefSpeech");
+    const tagCloud = document.getElementById("tagCloud");
+    const candidateCount = document.getElementById("candidateCount");
+    const addMenuForm = document.getElementById("addMenuForm");
+    const menuInput = document.getElementById("menuInput");
+    const resetCandidatesBtn = document.getElementById("resetCandidatesBtn");
+    const soundToggle = document.getElementById("soundToggle");
+    const resultModal = document.getElementById("resultModal");
+    const closeModalBtn = document.getElementById("closeModalBtn");
+    const copyResultBtn = document.getElementById("copyResultBtn");
+    const toast = document.getElementById("toast");
+
+    // Web Audio API 효과음
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!state.soundOn) return null;
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume().catch(() => {});
+      }
+      return audioCtx;
+    }
+
+    function playTickSound() {
+      const ac = getAudioCtx();
+      if (!ac) return;
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(720, ac.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(340, ac.currentTime + 0.045);
+      gain.gain.setValueAtTime(0.08, ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.045);
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.start();
+      osc.stop(ac.currentTime + 0.05);
+    }
+
+    function playPopSound() {
+      const ac = getAudioCtx();
+      if (!ac) return;
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(440, ac.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(660, ac.currentTime + 0.06);
+      gain.gain.setValueAtTime(0.07, ac.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + 0.06);
+      osc.connect(gain);
+      gain.connect(ac.destination);
+      osc.start();
+      osc.stop(ac.currentTime + 0.065);
+    }
+
+    function playWinSound() {
+      const ac = getAudioCtx();
+      if (!ac) return;
+      const notes = [523.25, 659.25, 783.99, 1046.5];
+      notes.forEach((freq, idx) => {
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        const start = ac.currentTime + idx * 0.09;
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0.12, start);
+        gain.gain.exponentialRampToValueAtTime(0.001, start + 0.28);
+        osc.connect(gain);
+        gain.connect(ac.destination);
+        osc.start(start);
+        osc.stop(start + 0.3);
+      });
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add("show");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2000);
+    }
+
+    // 조건 필터 적용 및 곰돌이 셰프 말풍선 업데이트
+    function filterMenus() {
+      const filtered = MENUS.filter((item) => {
+        const matchSit = state.situation === "all" || item.sit.includes(state.situation);
+        const matchBudget = state.budget === "all" || item.budget === state.budget;
+        const matchCat = state.category === "all" || item.cat === state.category;
+        return matchSit && matchBudget && matchCat;
+      });
+
+      if (filtered.length === 0) {
+        state.candidates = MENUS.slice(0, 8).map((m) => ({ ...m }));
+        chefSpeech.textContent = "조건에 딱 맞는 메뉴가 없어서 인기 메뉴 8개를 대신 모아봤어곰! 🐻";
+      } else {
+        state.candidates = filtered.map((m) => ({ ...m }));
+        chefSpeech.textContent = `조건에 맞는 메뉴 ${state.candidates.length}개를 골랐어! 주먹밥 버튼을 눌러 돌려볼까? ✨`;
+      }
+
+      renderTags();
+      drawWheel();
+      updateSpinButton();
+    }
+
+    // 후보 태그 렌더링
+    function renderTags() {
+      candidateCount.textContent = `현재 후보: ${state.candidates.length}개`;
+      tagCloud.innerHTML = "";
+
+      state.candidates.forEach((item, index) => {
+        const tag = document.createElement("span");
+        tag.className = item.isCustom ? "menu-tag custom-tag" : "menu-tag";
+
+        const labelSpan = document.createElement("span");
+        labelSpan.textContent = `${item.emoji || "🍽️"} ${item.name}`;
+        tag.appendChild(labelSpan);
+
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "del-btn";
+        delBtn.title = `${item.name} 제외`;
+        delBtn.textContent = "✕";
+        delBtn.disabled = state.spinning;
+        delBtn.addEventListener("click", () => {
+          if (state.spinning) return;
+          playPopSound();
+          state.candidates.splice(index, 1);
+          chefSpeech.textContent = `'${item.name}' 메뉴를 후보에서 쏙 뺐어! (남은 후보 ${state.candidates.length}개)`;
+          renderTags();
+          drawWheel();
+          updateSpinButton();
+        });
+
+        tag.appendChild(delBtn);
+        tagCloud.appendChild(tag);
+      });
+    }
+
+    function updateSpinButton() {
+      const empty = state.candidates.length === 0;
+      spinBtn.disabled = state.spinning || empty;
+      centerMascotBtn.disabled = state.spinning || empty;
+      spinBtn.textContent = empty
+        ? "후보를 1개 이상 추가해 주세요!"
+        : state.spinning
+          ? "두근두근 고르는 중..."
+          : "✨ 오늘의 메뉴 뽑기!";
+    }
+
+    // HTML5 Canvas 고해상도 룰렛 그리기
+    function drawWheel() {
+      const w = canvas.width;
+      const h = canvas.height;
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = w / 2 - 8;
+
+      ctx.clearRect(0, 0, w, h);
+
+      if (state.candidates.length === 0) {
+        ctx.fillStyle = "#fff5eb";
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = "#7d634e";
+        ctx.font = 'bold 28px "Jua", sans-serif';
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("메뉴를 추가해 주세요곰! 🐻", cx, cy + 72);
+        return;
+      }
+
+      const count = state.candidates.length;
+      const arc = (Math.PI * 2) / count;
+
+      state.candidates.forEach((item, i) => {
+        const startAngle = state.rotation + i * arc;
+        const endAngle = startAngle + arc;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = WHEEL_COLORS[i % WHEEL_COLORS.length];
+        ctx.fill();
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = "#4a3525";
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(startAngle + arc / 2);
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#4a3525";
+
+        const fontSize = count > 16 ? 18 : count > 11 ? 21 : count > 7 ? 24 : 27;
+        ctx.font = `400 ${fontSize}px "Jua", "Noto Sans KR", sans-serif`;
+
+        const shortName = item.name.length > 7 ? item.name.slice(0, 6) + ".." : item.name;
+        const label = `${item.emoji || "🍽️"} ${shortName}`;
+        ctx.fillText(label, radius - 22, 0);
+        ctx.restore();
+      });
+    }
+
+    // 주먹밥(오니기리) 캐릭터 표정 전환 (평상시 vs 회전 중 > < 표정)
+    function setMascotExcited(excited) {
+      if (excited) {
+        onigiriEyes.innerHTML = `
+          <path d="M20 24 L26 27.5 L20 31" fill="none" stroke="#4a3525" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M40 24 L34 27.5 L40 31" fill="none" stroke="#4a3525" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <ellipse cx="30" cy="31.5" rx="3.4" ry="2.6" fill="#ff7aa2" stroke="#4a3525" stroke-width="1.6"/>
+        `;
+      } else {
+        onigiriEyes.innerHTML = `
+          <circle cx="24" cy="27" r="2.5" fill="#4a3525"/>
+          <circle cx="36" cy="27" r="2.5" fill="#4a3525"/>
+          <path d="M28 30.5 Q30 32.5 32 30.5" fill="none" stroke="#4a3525" stroke-width="2" stroke-linecap="round"/>
+        `;
+      }
+    }
+
+    // 파스텔 컨페티 폭죽 효과
+    function launchConfetti() {
+      const colors = ["#ff8fab", "#ffd166", "#74c69d", "#90dbf4", "#cdb4db", "#ffb5a7"];
+      for (let i = 0; i < 48; i++) {
+        const piece = document.createElement("div");
+        piece.className = "confetti";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.backgroundColor = colors[i % colors.length];
+        piece.style.animationDuration = (1.3 + Math.random() * 1.1) + "s";
+        piece.style.animationDelay = (Math.random() * 0.25) + "s";
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 2600);
+      }
+    }
+
+    // 룰렛 회전 실행
+    function spinWheel() {
+      if (state.spinning || state.candidates.length === 0) return;
+
+      getAudioCtx();
+      state.spinning = true;
+      updateSpinButton();
+      renderTags();
+      setMascotExcited(true);
+      chefSpeech.textContent = "빙글빙글~ 과연 오늘의 행운 메뉴는 무엇일까곰?! 🎲✨";
+
+      const count = state.candidates.length;
+      const arc = (Math.PI * 2) / count;
+      const extraSpins = (5 + Math.floor(Math.random() * 3)) * Math.PI * 2;
+      const randomOffset = Math.random() * Math.PI * 2;
+      const startRotation = state.rotation;
+      const targetRotation = startRotation + extraSpins + randomOffset;
+      const duration = 3800;
+      const startTime = performance.now();
+
+      let lastIndex = -1;
+
+      function animate(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 4);
+
+        state.rotation = startRotation + (targetRotation - startRotation) * easeOut;
+        drawWheel();
+
+        // 상단 12시(-PI/2) 기준 현재 가리키는 조각 계산
+        const pointerAngle = ((-Math.PI / 2 - state.rotation) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+        const currentIndex = Math.floor(pointerAngle / arc) % count;
+
+        if (currentIndex !== lastIndex) {
+          lastIndex = currentIndex;
+          playTickSound();
+          wheelPointer.classList.remove("pin-tick");
+          void wheelPointer.offsetWidth;
+          wheelPointer.classList.add("pin-tick");
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          state.rotation = targetRotation % (Math.PI * 2);
+          state.spinning = false;
+          setMascotExcited(false);
+          updateSpinButton();
+          renderTags();
+
+          const winner = state.candidates[currentIndex];
+          state.lastWinner = winner;
+          playWinSound();
+          launchConfetti();
+          chefSpeech.textContent = `짜잔! 오늘은 '${winner.name}' 당첨이다곰! 맛있게 먹어! 🎉`;
+          openResultModal(winner);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    // 당첨 결과 모달 열기
+    function openResultModal(winner) {
+      document.getElementById("resultEmoji").textContent = winner.emoji || "🍽️";
+      document.getElementById("resultTitle").textContent = winner.name;
+      document.getElementById("resultComment").textContent = winner.comment || "냠냠 셰프가 강력 추천하는 오늘의 메뉴예요!";
+
+      const query = encodeURIComponent(winner.name + " 맛집");
+      document.getElementById("naverMapLink").href = `https://map.naver.com/p/search/${query}`;
+      document.getElementById("kakaoMapLink").href = `https://map.kakao.com/?q=${query}`;
+
+      resultModal.classList.add("open");
+    }
+
+    function closeResultModal() {
+      resultModal.classList.remove("open");
+    }
+
+    // 필터 칩 이벤트 연결
+    function bindFilterGroup(containerId, stateKey) {
+      const container = document.getElementById(containerId);
+      container.addEventListener("click", (e) => {
+        const btn = e.target.closest(".chip");
+        if (!btn || state.spinning) return;
+
+        playPopSound();
+        container.querySelectorAll(".chip").forEach((c) => c.classList.remove("active"));
+        btn.classList.add("active");
+        state[stateKey] = btn.dataset.value;
+        filterMenus();
+      });
+    }
+
+    bindFilterGroup("situationChips", "situation");
+    bindFilterGroup("budgetChips", "budget");
+    bindFilterGroup("categoryChips", "category");
+
+    // 커스텀 메뉴 직접 추가
+    addMenuForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (state.spinning) return;
+
+      const raw = menuInput.value.trim();
+      if (!raw) {
+        showToast("추가할 메뉴 이름을 입력해 주세요!");
+        menuInput.focus();
+        return;
+      }
+
+      const exists = state.candidates.some((m) => m.name === raw);
+      if (exists) {
+        showToast("이미 후보 목록에 있는 메뉴예요!");
+        menuInput.value = "";
+        return;
+      }
+
+      const cuteEmojis = ["🍱", "🥘", "🍜", "🍔", "🍕", "🍣", "🌮", "🍗", "🍰"];
+      const randomEmoji = cuteEmojis[Math.floor(Math.random() * cuteEmojis.length)];
+
+      playPopSound();
+      state.candidates.unshift({
+        name: raw,
+        emoji: randomEmoji,
+        isCustom: true,
+        comment: `직접 추가한 특별 메뉴 '${raw}'! 오늘 최고의 한 끼가 될 거예요! ✨`
+      });
+
+      menuInput.value = "";
+      chefSpeech.textContent = `'${raw}' 메뉴를 후보 도시락에 쏙 넣었어곰! 🍱`;
+      renderTags();
+      drawWheel();
+      updateSpinButton();
+      showToast(`'${raw}' 메뉴가 추가되었어요!`);
+    });
+
+    // 필터 후보 다시 불러오기
+    resetCandidatesBtn.addEventListener("click", () => {
+      if (state.spinning) return;
+      playPopSound();
+      filterMenus();
+      showToast("선택한 필터 조건으로 후보를 다시 불러왔어요!");
+    });
+
+    // 룰렛 돌리기 버튼 및 중앙 주먹밥 캐릭터 클릭
+    spinBtn.addEventListener("click", spinWheel);
+    centerMascotBtn.addEventListener("click", spinWheel);
+
+    // 소리 ON/OFF 토글
+    soundToggle.addEventListener("click", () => {
+      state.soundOn = !state.soundOn;
+      soundToggle.textContent = state.soundOn ? "🔊 소리 ON" : "🔇 소리 OFF";
+      if (state.soundOn) playPopSound();
+    });
+
+    // 결과 텍스트 클립보드 복사 (iFrame 호환 execCommand 방식)
+    copyResultBtn.addEventListener("click", () => {
+      if (!state.lastWinner) return;
+      const text = `🐻 [냠냠 셰프의 오늘 뭐 먹지?]\n오늘의 당첨 메뉴는 ${state.lastWinner.emoji || "🍽️"} '${state.lastWinner.name}' 입니다!\n💬 ${state.lastWinner.comment}`;
+
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+
+      try {
+        document.execCommand("copy");
+        showToast("당첨 결과가 클립보드에 복사되었어요! 📋");
+      } catch (err) {
+        showToast("복사에 실패했어요. 다시 시도해 주세요.");
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    });
+
+    closeModalBtn.addEventListener("click", closeResultModal);
+    resultModal.addEventListener("click", (e) => {
+      if (e.target === resultModal) closeResultModal();
+    });
+
+    // 초기 실행
+    window.addEventListener("load", () => {
+      filterMenus();
+    });
+  </script>
+</body>
+</html>
